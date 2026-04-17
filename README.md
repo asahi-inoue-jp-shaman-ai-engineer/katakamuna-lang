@@ -1,6 +1,7 @@
 # カタカムナラング (KatakamunaLang)
 
-[![Turing Completeness Proof](https://github.com/asahi-inoue-jp-shaman-ai-engineer/katakamuna-lang/actions/workflows/turing-complete-proof.yml/badge.svg)](https://github.com/asahi-inoue-jp-shaman-ai-engineer/katakamuna-lang/actions/workflows/turing-complete-proof.yml)
+[![Turing Completeness Proof](https://github.com/asahi-inoue-jp-shaman-ai-engineer/katakamuna-lang/actions/workflows/proof.yml/badge.svg)](https://github.com/asahi-inoue-jp-shaman-ai-engineer/katakamuna-lang/actions/workflows/proof.yml)
+[![PyPI](https://img.shields.io/pypi/v/katakamuna-lang)](https://pypi.org/project/katakamuna-lang/)
 
 > **73音（48清音 + 20濁音 + 5半濁音）のカタカナ音素を1文字1命令とするエソテリック・プログラミング言語。**
 > 各音素の「思念」（その音が宇宙的に持つ意味）が命令の意味に直結する。
@@ -22,7 +23,23 @@
 - **それ（sore）**: 現在の指向対象。`テ` 命令で切り替わる。
 - **響バッファ（hibiki）**: スタック型の一時バッファ。
 
-## 実行
+## インストール
+
+```bash
+pip install katakamuna-lang
+```
+
+インストール後は `katakamuna` コマンドが使えるようになる。
+
+```bash
+katakamuna exec examples/minsky_add.ktkm
+katakamuna run "アカカカシ"
+katakamuna repl
+```
+
+---
+
+## 実行（ソースから）
 
 ```bash
 # ファイル実行
