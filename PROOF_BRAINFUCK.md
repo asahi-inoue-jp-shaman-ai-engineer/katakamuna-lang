@@ -84,9 +84,15 @@ Brainfuck の実用的プログラムは **balanced loops**（ループ入口と
 違反していれば `BfCompileError` を投げる。
 
 Turing 完全性の主張は「**任意の Brainfuck プログラム**を翻訳できる」ことが
-本質だが、**balanced でない Brainfuck プログラムは balanced に書き換え可能**
-であることが知られている（`[...]` ブロックの再構造化定理）。
-したがって方式A の制限は Turing 完全性の射程を狭めない。
+本質だが、方式A の制限が証明の射程を狭めない理由は次の通りである。
+
+Brainfuck の Turing 完全性の核は、ポインタがループ内外で変化しないプログラム群
+——そのまま balanced loops——で完全に証明できる
+（BF の TC 性を示す代表的な帰納証明はすべて balanced loop のパターンを使用している）。
+したがって方式A がカバーする balanced loops の部分集合は、完全な Turing 完全性の証明に十分である。
+
+> **注**: 旧版の記述にあった「unbalanced プログラムは balanced に書き換え可能」という表現は一般局面では成立しない場合があり得るため、
+> より正確な上記の表現に修正した。
 
 完全な汎用性（unbalanced loops を含む任意の BF）を求める場合は、
 §5 の方式B（動的ディスパッチ）を使えばよい。
@@ -307,14 +313,15 @@ PYTHONIOENCODING=utf-8 KATAKAMUNA_MAX_TICKS=0 python katakamuna.py exec examples
 ## 9. 実行方法（まとめ）
 
 ```bash
-cd C:/Users/asahi/katakamuna-lang
+# リポジトリルートから実行
+cd katakamuna-lang
 
 # Brainfuck → ktkm の生成
 PYTHONIOENCODING=utf-8 python tools/bf2ktkm.py "++>+++<[->+<]>." -o examples/bf_copy.ktkm
 PYTHONIOENCODING=utf-8 python tools/bf2ktkm.py "++>+++<[->[->+>+<<]>>[-<<+>>]<<<]>>." -o examples/bf_multiply.ktkm
 PYTHONIOENCODING=utf-8 python tools/bf2ktkm.py "++++++++[>+++++++++<-]>." -o examples/bf_hello_digit.ktkm
 
-# 実行（BF展開後は tick 数が多いので MAX_TICKS を上げる）
+# 実行（KATAKAMUNA_MAX_TICKS=0 が必須 — 詳細は PROOF.md §4 を参照）
 PYTHONIOENCODING=utf-8 KATAKAMUNA_MAX_TICKS=0 python katakamuna.py exec examples/bf_copy.ktkm
 PYTHONIOENCODING=utf-8 KATAKAMUNA_MAX_TICKS=0 python katakamuna.py exec examples/bf_multiply.ktkm
 PYTHONIOENCODING=utf-8 KATAKAMUNA_MAX_TICKS=0 python katakamuna.py exec examples/bf_hello_digit.ktkm

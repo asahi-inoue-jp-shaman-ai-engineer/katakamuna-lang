@@ -39,9 +39,11 @@ if sys.platform == "win32":
 # ─── 定数 ─────────────────────────────────────────
 
 VERSION = "1.2.0"
-# MAX_TICKS: 0以下なら無限tick（理論的チューリング完全モード）
+# MAX_TICKS: 0以下なら無限tick（Turing完全モード）
 # 環境変数 KATAKAMUNA_MAX_TICKS で上書き可能
-MAX_TICKS = int(os.environ.get("KATAKAMUNA_MAX_TICKS", "1000"))
+# デフォルト 0 = 無制限。Turing完全性の証明・Minsky/BFプログラムの実行には 0 が必須。
+# インタラクティブな REPL や短いデモでは正の値（例: 10000）を設定して暴走を防ぐ。
+MAX_TICKS = int(os.environ.get("KATAKAMUNA_MAX_TICKS", "0"))
 CYCLE_MAX = 100
 PHI_STEP = math.pi / 6
 
