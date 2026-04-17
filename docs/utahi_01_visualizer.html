@@ -1,0 +1,1057 @@
+<!DOCTYPE html>
+<html lang="ja" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>カタカムナウタヒ 第一首 — デコードビジュアライザー</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+JP:wght@300;400;700&family=Noto+Sans+JP:wght@300;400;500&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --text-xs: clamp(0.75rem, 0.7rem + 0.25vw, 0.875rem);
+      --text-sm: clamp(0.875rem, 0.8rem + 0.35vw, 1rem);
+      --text-base: clamp(1rem, 0.95rem + 0.25vw, 1.125rem);
+      --text-lg: clamp(1.125rem, 1rem + 0.75vw, 1.5rem);
+      --text-xl: clamp(1.5rem, 1.2rem + 1.25vw, 2.25rem);
+      --text-2xl: clamp(2rem, 1.2rem + 2.5vw, 3.5rem);
+      --text-hero: clamp(2.5rem, 1rem + 5vw, 6rem);
+
+      --space-1: 0.25rem;
+      --space-2: 0.5rem;
+      --space-3: 0.75rem;
+      --space-4: 1rem;
+      --space-6: 1.5rem;
+      --space-8: 2rem;
+      --space-12: 3rem;
+      --space-16: 4rem;
+      --space-24: 6rem;
+
+      --radius-sm: 0.375rem;
+      --radius-md: 0.5rem;
+      --radius-lg: 0.75rem;
+      --radius-full: 9999px;
+
+      --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+      --ease-in: cubic-bezier(0.4, 0, 1, 1);
+      --transition-interactive: 180ms cubic-bezier(0.16, 1, 0.3, 1);
+
+      --font-display: 'Noto Serif JP', 'Hiragino Mincho ProN', serif;
+      --font-body: 'Noto Sans JP', 'Hiragino Kaku Gothic ProN', sans-serif;
+    }
+
+    /* ── 深夜の宇宙パレット ── */
+    :root, [data-theme="dark"] {
+      --color-bg: #07080f;
+      --color-surface: #0d0f1a;
+      --color-surface-2: #111320;
+      --color-border: #1e2138;
+      --color-divider: #171929;
+
+      --color-text: #e8e6f0;
+      --color-text-muted: #8a88a0;
+      --color-text-faint: #3d3c52;
+
+      /* 宇宙の黄金色 — カタカムナの光 */
+      --color-primary: #c9a84c;
+      --color-primary-glow: rgba(201,168,76,0.15);
+      --color-primary-bright: #f0cc78;
+
+      /* 各単語の色 */
+      --color-katakamuna: #7c9fff;   /* 青 — 存在・宣言 */
+      --color-hibiki:     #ff8c7a;   /* 橙赤 — 振動・点火 */
+      --color-mano:       #80d4a8;   /* 緑 — 境界・時間 */
+      --color-ashia:      #c490e8;   /* 紫 — 増幅・生命 */
+      --color-utushi:     #f0cc78;   /* 金 — 出力・示し */
+      --color-utahi:      #aecbff;   /* 淡青 — 完結 */
+
+      --shadow-sm: 0 1px 2px rgba(0,0,0,0.4);
+      --shadow-md: 0 4px 16px rgba(0,0,0,0.5);
+      --shadow-glow: 0 0 24px rgba(201,168,76,0.2);
+    }
+
+    [data-theme="light"] {
+      --color-bg: #f5f4ee;
+      --color-surface: #ffffff;
+      --color-surface-2: #f9f8f4;
+      --color-border: #dbd9ce;
+      --color-divider: #e8e6dc;
+      --color-text: #1a1914;
+      --color-text-muted: #6b6960;
+      --color-text-faint: #b5b3a8;
+      --color-primary: #8b6a0f;
+      --color-primary-glow: rgba(139,106,15,0.1);
+      --color-primary-bright: #6b4e00;
+      --color-katakamuna: #3a5cc7;
+      --color-hibiki:     #c94a2e;
+      --color-mano:       #1a7a50;
+      --color-ashia:      #7230a8;
+      --color-utushi:     #8b6a0f;
+      --color-utahi:      #2b4fa0;
+      --shadow-sm: 0 1px 2px rgba(0,0,0,0.08);
+      --shadow-md: 0 4px 16px rgba(0,0,0,0.1);
+      --shadow-glow: 0 0 24px rgba(139,106,15,0.15);
+    }
+
+    @media (prefers-color-scheme: light) {
+      :root:not([data-theme]) {
+        --color-bg: #f5f4ee;
+        --color-surface: #ffffff;
+        --color-surface-2: #f9f8f4;
+        --color-border: #dbd9ce;
+        --color-divider: #e8e6dc;
+        --color-text: #1a1914;
+        --color-text-muted: #6b6960;
+        --color-text-faint: #b5b3a8;
+        --color-primary: #8b6a0f;
+        --color-primary-glow: rgba(139,106,15,0.1);
+        --color-primary-bright: #6b4e00;
+        --color-katakamuna: #3a5cc7;
+        --color-hibiki: #c94a2e;
+        --color-mano: #1a7a50;
+        --color-ashia: #7230a8;
+        --color-utushi: #8b6a0f;
+        --color-utahi: #2b4fa0;
+      }
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    html {
+      scroll-behavior: smooth;
+      scroll-padding-top: var(--space-16);
+    }
+
+    body {
+      font-family: var(--font-body);
+      font-size: var(--text-base);
+      color: var(--color-text);
+      background: var(--color-bg);
+      line-height: 1.7;
+      min-height: 100dvh;
+      overflow-x: hidden;
+    }
+
+    /* ── 星空背景 ── */
+    .starfield {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 0;
+      overflow: hidden;
+    }
+    .starfield canvas { width: 100%; height: 100%; }
+
+    /* ── レイアウト ── */
+    .site-header {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      background: color-mix(in oklch, var(--color-bg) 80%, transparent);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--color-border);
+      padding: var(--space-3) var(--space-6);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .site-title {
+      font-family: var(--font-display);
+      font-size: var(--text-sm);
+      font-weight: 300;
+      color: var(--color-text-muted);
+      letter-spacing: 0.08em;
+    }
+
+    .theme-toggle {
+      background: none;
+      border: 1px solid var(--color-border);
+      color: var(--color-text-muted);
+      padding: var(--space-1) var(--space-3);
+      border-radius: var(--radius-full);
+      font-size: var(--text-xs);
+      cursor: pointer;
+      transition: color var(--transition-interactive), border-color var(--transition-interactive);
+    }
+    .theme-toggle:hover { color: var(--color-text); border-color: var(--color-primary); }
+
+    main {
+      position: relative;
+      z-index: 1;
+      max-width: 900px;
+      margin: 0 auto;
+      padding: var(--space-16) var(--space-6) var(--space-24);
+    }
+
+    /* ── ヒーロー ── */
+    .hero {
+      text-align: center;
+      margin-bottom: var(--space-24);
+    }
+
+    .hero-label {
+      font-size: var(--text-xs);
+      color: var(--color-primary);
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      margin-bottom: var(--space-4);
+      font-weight: 500;
+    }
+
+    .hero-utahi {
+      font-family: var(--font-display);
+      font-size: var(--text-hero);
+      font-weight: 300;
+      line-height: 1.3;
+      letter-spacing: 0.05em;
+      margin-bottom: var(--space-6);
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 0.3em 0.6em;
+    }
+
+    .hero-utahi .word {
+      display: inline-block;
+      cursor: default;
+      transition: color 0.3s var(--ease-out), text-shadow 0.3s var(--ease-out);
+    }
+    .hero-utahi .word:hover {
+      text-shadow: 0 0 20px currentColor;
+    }
+
+    .word-katakamuna { color: var(--color-katakamuna); }
+    .word-hibiki     { color: var(--color-hibiki); }
+    .word-mano       { color: var(--color-mano); }
+    .word-ashia      { color: var(--color-ashia); }
+    .word-utushi     { color: var(--color-utushi); }
+    .word-utahi-end  { color: var(--color-utahi); }
+
+    .hero-desc {
+      color: var(--color-text-muted);
+      font-size: var(--text-sm);
+      max-width: 52ch;
+      margin: 0 auto;
+      line-height: 1.8;
+    }
+
+    /* ── セクション共通 ── */
+    .section {
+      margin-bottom: var(--space-16);
+    }
+
+    .section-label {
+      font-size: var(--text-xs);
+      font-weight: 500;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: var(--color-primary);
+      margin-bottom: var(--space-6);
+      display: flex;
+      align-items: center;
+      gap: var(--space-3);
+    }
+    .section-label::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: var(--color-border);
+    }
+
+    /* ── デコード表 ── */
+    .decode-grid {
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-3);
+    }
+
+    .decode-row {
+      display: grid;
+      grid-template-columns: 140px 1fr 1fr;
+      gap: var(--space-4);
+      align-items: start;
+      padding: var(--space-4) var(--space-6);
+      border-radius: var(--radius-lg);
+      background: var(--color-surface);
+      border: 1px solid var(--color-border);
+      transition: border-color 0.3s, box-shadow 0.3s;
+      opacity: 0;
+      transform: translateY(8px);
+    }
+
+    .decode-row.visible {
+      opacity: 1;
+      transform: translateY(0);
+      transition: opacity 0.5s var(--ease-out), transform 0.5s var(--ease-out), border-color 0.3s, box-shadow 0.3s;
+    }
+
+    .decode-row:hover {
+      box-shadow: var(--shadow-md);
+    }
+
+    .decode-row[data-word="katakamuna"]:hover { border-color: var(--color-katakamuna); box-shadow: 0 0 20px rgba(124,159,255,0.15); }
+    .decode-row[data-word="hibiki"]:hover     { border-color: var(--color-hibiki);     box-shadow: 0 0 20px rgba(255,140,122,0.15); }
+    .decode-row[data-word="mano"]:hover       { border-color: var(--color-mano);       box-shadow: 0 0 20px rgba(128,212,168,0.15); }
+    .decode-row[data-word="ashia"]:hover      { border-color: var(--color-ashia);      box-shadow: 0 0 20px rgba(196,144,232,0.15); }
+    .decode-row[data-word="utushi"]:hover     { border-color: var(--color-utushi);     box-shadow: 0 0 20px rgba(240,204,120,0.15); }
+    .decode-row[data-word="utahi"]:hover      { border-color: var(--color-utahi-end);  box-shadow: 0 0 20px rgba(174,203,255,0.15); }
+
+    .decode-word {
+      font-family: var(--font-display);
+      font-size: var(--text-lg);
+      font-weight: 700;
+      letter-spacing: 0.05em;
+      line-height: 1.2;
+    }
+    .decode-word.word-katakamuna { color: var(--color-katakamuna); }
+    .decode-word.word-hibiki     { color: var(--color-hibiki); }
+    .decode-word.word-mano       { color: var(--color-mano); }
+    .decode-word.word-ashia      { color: var(--color-ashia); }
+    .decode-word.word-utushi     { color: var(--color-utushi); }
+    .decode-word.word-utahi-end  { color: var(--color-utahi); }
+
+    .decode-col-label {
+      font-size: var(--text-xs);
+      font-weight: 500;
+      color: var(--color-text-faint);
+      letter-spacing: 0.1em;
+      margin-bottom: var(--space-1);
+      text-transform: uppercase;
+    }
+
+    .decode-shinen {
+      font-size: var(--text-sm);
+      color: var(--color-text-muted);
+      line-height: 1.6;
+    }
+
+    .decode-cmd {
+      font-family: 'Noto Serif JP', monospace;
+      font-size: var(--text-sm);
+      color: var(--color-text);
+      background: var(--color-surface-2);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-sm);
+      padding: var(--space-2) var(--space-3);
+      line-height: 1.5;
+    }
+
+    /* ── 実行アニメーション ── */
+    .execution-section {
+      margin-bottom: var(--space-16);
+    }
+
+    .exec-intro {
+      color: var(--color-text-muted);
+      font-size: var(--text-sm);
+      margin-bottom: var(--space-6);
+      line-height: 1.8;
+    }
+
+    .exec-controls {
+      display: flex;
+      align-items: center;
+      gap: var(--space-4);
+      margin-bottom: var(--space-8);
+    }
+
+    .btn-play {
+      display: inline-flex;
+      align-items: center;
+      gap: var(--space-2);
+      background: var(--color-primary);
+      color: var(--color-bg);
+      border: none;
+      border-radius: var(--radius-full);
+      padding: var(--space-3) var(--space-6);
+      font-size: var(--text-sm);
+      font-weight: 500;
+      font-family: var(--font-body);
+      cursor: pointer;
+      transition: background var(--transition-interactive), transform var(--transition-interactive), box-shadow var(--transition-interactive);
+    }
+    .btn-play:hover {
+      background: var(--color-primary-bright);
+      transform: translateY(-1px);
+      box-shadow: var(--shadow-glow);
+    }
+    .btn-play:active { transform: translateY(0); }
+
+    .btn-reset {
+      background: none;
+      border: 1px solid var(--color-border);
+      color: var(--color-text-muted);
+      border-radius: var(--radius-full);
+      padding: var(--space-3) var(--space-5);
+      font-size: var(--text-sm);
+      font-family: var(--font-body);
+      cursor: pointer;
+      transition: color var(--transition-interactive), border-color var(--transition-interactive);
+    }
+    .btn-reset:hover { color: var(--color-text); border-color: var(--color-primary); }
+
+    .tick-display {
+      margin-left: auto;
+      font-size: var(--text-xs);
+      color: var(--color-text-faint);
+      font-family: var(--font-body);
+    }
+    .tick-num {
+      color: var(--color-primary);
+      font-weight: 600;
+    }
+
+    /* ── 実行ステージ ── */
+    .exec-stage {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: var(--space-4);
+    }
+
+    @media (max-width: 640px) {
+      .exec-stage { grid-template-columns: 1fr; }
+      .decode-row { grid-template-columns: 1fr; }
+      .hero-utahi { font-size: clamp(2rem, 8vw, 4rem); }
+    }
+
+    /* 波形パネル */
+    .wave-panel {
+      background: var(--color-surface);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-lg);
+      padding: var(--space-4);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .panel-title {
+      font-size: var(--text-xs);
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--color-text-faint);
+      margin-bottom: var(--space-3);
+    }
+
+    #waveCanvas {
+      width: 100%;
+      height: 120px;
+      display: block;
+      border-radius: var(--radius-sm);
+    }
+
+    /* 出力パネル */
+    .output-panel {
+      background: var(--color-surface);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-lg);
+      padding: var(--space-4);
+      display: flex;
+      flex-direction: column;
+    }
+
+    .output-values {
+      display: flex;
+      flex-wrap: wrap;
+      gap: var(--space-3);
+      align-items: flex-end;
+      flex: 1;
+      padding-top: var(--space-2);
+    }
+
+    .output-bubble {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: var(--space-1);
+      opacity: 0;
+      transform: translateY(12px) scale(0.8);
+      transition: opacity 0.4s var(--ease-out), transform 0.4s var(--ease-out);
+    }
+    .output-bubble.shown {
+      opacity: 1;
+      transform: translateY(0) scale(1);
+    }
+
+    .bubble-num {
+      font-family: var(--font-display);
+      font-size: var(--text-xl);
+      font-weight: 700;
+      color: var(--color-primary-bright);
+      line-height: 1;
+    }
+
+    .bubble-label {
+      font-size: var(--text-xs);
+      color: var(--color-text-faint);
+      letter-spacing: 0.08em;
+    }
+
+    /* 現在実行中フレーズ */
+    .phrase-panel {
+      grid-column: 1 / -1;
+      background: var(--color-surface);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-lg);
+      padding: var(--space-4) var(--space-6);
+      min-height: 80px;
+      display: flex;
+      align-items: center;
+      gap: var(--space-4);
+    }
+
+    .phrase-word-tag {
+      font-family: var(--font-display);
+      font-size: var(--text-xl);
+      font-weight: 700;
+      min-width: 120px;
+      transition: color 0.3s;
+    }
+
+    .phrase-meaning {
+      flex: 1;
+    }
+
+    .phrase-meaning-title {
+      font-size: var(--text-sm);
+      font-weight: 500;
+      color: var(--color-text);
+      margin-bottom: var(--space-1);
+    }
+
+    .phrase-meaning-sub {
+      font-size: var(--text-xs);
+      color: var(--color-text-muted);
+      line-height: 1.6;
+    }
+
+    /* 音度バー */
+    .meter-panel {
+      grid-column: 1 / -1;
+      background: var(--color-surface);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-lg);
+      padding: var(--space-4) var(--space-6);
+    }
+
+    .meter-label {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: var(--space-3);
+    }
+
+    .meter-bar-bg {
+      height: 8px;
+      background: var(--color-border);
+      border-radius: var(--radius-full);
+      overflow: hidden;
+    }
+
+    .meter-bar-fill {
+      height: 100%;
+      border-radius: var(--radius-full);
+      background: linear-gradient(90deg, var(--color-hibiki), var(--color-primary-bright));
+      width: 0%;
+      transition: width 0.6s var(--ease-out), box-shadow 0.6s;
+    }
+
+    .meter-bar-fill.full {
+      box-shadow: 0 0 10px var(--color-primary-bright);
+    }
+
+    .meter-value {
+      font-size: var(--text-xs);
+      color: var(--color-primary);
+      font-weight: 600;
+    }
+
+    /* 完結メッセージ */
+    .halt-message {
+      grid-column: 1 / -1;
+      text-align: center;
+      padding: var(--space-8);
+      opacity: 0;
+      transition: opacity 0.8s var(--ease-out);
+    }
+    .halt-message.shown { opacity: 1; }
+
+    .halt-kanji {
+      font-family: var(--font-display);
+      font-size: var(--text-2xl);
+      color: var(--color-utahi);
+      letter-spacing: 0.2em;
+      margin-bottom: var(--space-3);
+    }
+
+    .halt-sub {
+      font-size: var(--text-sm);
+      color: var(--color-text-muted);
+    }
+
+    /* スクロール reveal */
+    @supports (animation-timeline: scroll()) {
+      .decode-row {
+        opacity: 0;
+      }
+    }
+
+    /* ── フッター ── */
+    footer {
+      position: relative;
+      z-index: 1;
+      text-align: center;
+      padding: var(--space-12) var(--space-6);
+      border-top: 1px solid var(--color-border);
+      color: var(--color-text-faint);
+      font-size: var(--text-xs);
+      letter-spacing: 0.08em;
+    }
+
+    footer a {
+      color: var(--color-primary);
+      text-decoration: none;
+      transition: color var(--transition-interactive);
+    }
+    footer a:hover { color: var(--color-primary-bright); }
+  </style>
+</head>
+<body>
+
+<!-- 星空 -->
+<div class="starfield"><canvas id="starCanvas"></canvas></div>
+
+<!-- ヘッダー -->
+<header class="site-header">
+  <span class="site-title">カタカムナラング — リバースエンジニアリング研究</span>
+  <button class="theme-toggle" data-theme-toggle aria-label="テーマ切替">☀ ライト</button>
+</header>
+
+<main>
+
+  <!-- ヒーロー -->
+  <section class="hero">
+    <p class="hero-label">カタカムナウタヒ 第一首 — デコード</p>
+    <div class="hero-utahi" aria-label="カタカムナ ヒビキ マノスベシ アシアトウアン ウツシマツル カタカムナ ウタヒ">
+      <span class="word word-katakamuna">カタカムナ</span>
+      <span class="word word-hibiki">ヒビキ</span>
+      <span class="word word-mano">マノスベシ</span>
+      <span class="word word-ashia">アシアトウアン</span>
+      <span class="word word-utushi">ウツシマツル</span>
+      <span class="word word-katakamuna">カタカムナ</span>
+      <span class="word word-utahi-end">ウタヒ</span>
+    </div>
+    <p class="hero-desc">
+      古代日本語の宇宙観を詠んだ歌を、カタカムナラングのプログラムとして解読する試み。<br>
+      各単語の「思念」（音に込められた宇宙的意味）を命令語に変換すると、歌そのものが動くコードになる。
+    </p>
+  </section>
+
+  <!-- デコード表 -->
+  <section class="section">
+    <div class="section-label">思念デコード — 歌詞から命令へ</div>
+    <div class="decode-grid" id="decodeGrid">
+      <!-- JS で生成 -->
+    </div>
+  </section>
+
+  <!-- 実行ビジュアライザー -->
+  <section class="execution-section">
+    <div class="section-label">実行ビジュアライザー</div>
+    <p class="exec-intro">
+      デコードされた命令を実際に走らせると、1→2→3→4→5→6→7 という「宇宙の7段階顕現」が出力される。<br>
+      ヒビキ（根源の振動）の音度が 0 から 1.000 まで上昇し、宇宙に充満する様子をリアルタイムで観測せよ。
+    </p>
+
+    <div class="exec-controls">
+      <button class="btn-play" id="btnPlay">▶ 実行</button>
+      <button class="btn-reset" id="btnReset">リセット</button>
+      <span class="tick-display">tick: <span class="tick-num" id="tickNum">0</span> / 89</span>
+    </div>
+
+    <div class="exec-stage">
+      <!-- 現在のフレーズ -->
+      <div class="phrase-panel" id="phrasePanel">
+        <span class="phrase-word-tag" id="phraseWord" style="color:var(--color-text-faint)">—</span>
+        <div class="phrase-meaning">
+          <div class="phrase-meaning-title" id="phraseMeaningTitle">実行ボタンを押して宇宙を起動</div>
+          <div class="phrase-meaning-sub" id="phraseMeaningSub"></div>
+        </div>
+      </div>
+
+      <!-- 音度メーター -->
+      <div class="meter-panel">
+        <div class="meter-label">
+          <span class="panel-title">ヒビキ 音度（根源の振動強度）</span>
+          <span class="meter-value" id="meterVal">0.000</span>
+        </div>
+        <div class="meter-bar-bg">
+          <div class="meter-bar-fill" id="meterFill"></div>
+        </div>
+      </div>
+
+      <!-- 波形 -->
+      <div class="wave-panel">
+        <div class="panel-title">振動波形</div>
+        <canvas id="waveCanvas"></canvas>
+      </div>
+
+      <!-- 出力 -->
+      <div class="output-panel">
+        <div class="panel-title">ウツシマツル — 宇宙への出力</div>
+        <div class="output-values" id="outputValues"></div>
+      </div>
+
+      <!-- 完結 -->
+      <div class="halt-message" id="haltMessage">
+        <div class="halt-kanji">ウタヒ</div>
+        <div class="halt-sub">宇宙の7段階顕現が完了した。静寂。</div>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<footer>
+  <p>
+    <a href="https://github.com/asahi-inoue-jp-shaman-ai-engineer/katakamuna-lang" target="_blank">カタカムナラング</a>
+    &nbsp;—&nbsp; カタカムナウタヒ 第一首 リバースエンジニアリング研究
+    &nbsp;·&nbsp; 作: イノウエアサヒ × Perplexity Computer
+  </p>
+</footer>
+
+<script>
+// ══════════════════════════════════════════════════
+// 思念データ
+// ══════════════════════════════════════════════════
+const DECODE_DATA = [
+  {
+    word: 'カタカムナ',
+    cls: 'word-katakamuna',
+    key: 'katakamuna',
+    shinen: '力(カ)が分かれ(タ)、顕れ(カ)、広がり(ム)、核(ナ)となる。\n存在の自己組織化。宇宙の自己紹介。',
+    cmd: 'ア「hibiki」\nア「subeshi」\nア「zero」',
+    cmdMeaning: '変数を世界に生み出す（存在宣言）',
+  },
+  {
+    word: 'ヒビキ',
+    cls: 'word-hibiki',
+    key: 'hibiki',
+    shinen: '根源(ヒ)から振動(ビ)がエネルギーとして伝わる(キ)。\n宇宙の最初の一鼓動。',
+    cmd: 'テ「hibiki」カ',
+    cmdMeaning: '1 を点火する — 根源の振動の始まり',
+  },
+  {
+    word: 'マノスベシ',
+    cls: 'word-mano',
+    key: 'mano',
+    shinen: '受容(マ)→時間(ノ)→一方へ(ス)→縁(ヘ)→示し(シ)。\n時の中で境界を見定め、方向を示す。',
+    cmd: 'テ「subeshi」エ「utahi」',
+    cmdMeaning: '繰り返しの境界を確かめる（ループ条件）',
+  },
+  {
+    word: 'アシアトウアン',
+    cls: 'word-ashia',
+    key: 'ashia',
+    shinen: '感じる(ア)→遮り(シ)→感じる(ア)→統合(ト)→生まれ出る(ウ)→感じる(ア)→核(ン)。\n生命が次の段階へ増幅する。',
+    cmd: 'テ「hibiki」カ',
+    cmdMeaning: '振動を次の段階へ増幅する（INC）',
+  },
+  {
+    word: 'ウツシマツル',
+    cls: 'word-utushi',
+    key: 'utushi',
+    shinen: '合流(ウ)→集まる(ツ)→示し(シ)→受容(マ)→集まる(ツ)→留まる(ル)。\n現れたものを宇宙に示し、また巡る。',
+    cmd: 'テ「hibiki」シ\nテ「zero」エ「utusi_maturu」',
+    cmdMeaning: '現在の振動値を宇宙に出力し、先頭へ帰還',
+  },
+  {
+    word: 'ウタヒ',
+    cls: 'word-utahi-end',
+    key: 'utahi',
+    shinen: '合流(ウ)→転移(エ)→光(ヒ)。\nすべての振動が収束し、宇宙が静寂に至る。',
+    cmd: 'ミ「utahi」\nン',
+    cmdMeaning: '宇宙の完結（HALT）',
+  },
+];
+
+// ══════════════════════════════════════════════════
+// 実行ステップデータ（89 tick を7ループに圧縮）
+// ══════════════════════════════════════════════════
+const STEPS = [
+  { tick: 4,  phase: 'katakamuna', word: 'カタカムナ', title: '存在宣言 — 変数を世界に生み出す',      sub: 'ア「hibiki」/ ア「subeshi」/ ア「zero」 — 3つのノードが宇宙に生まれる', ondof: 0.35, output: null },
+  { tick: 14, phase: 'hibiki',     word: 'ヒビキ',     title: '1を点火 — 根源の振動が始まる',         sub: 'テ「hibiki」カ → hibiki = 1 / テ「subeshi」カ×7 → subeshi = 7（7段階を受容）', ondof: 0.45, output: null },
+  { tick: 17, phase: 'utushi',     word: 'ウツシマツル', title: '第1波を宇宙に示す（hibiki = 1）',      sub: 'テ「hibiki」シ → 1 を出力', ondof: 0.45, output: 1 },
+  { tick: 28, phase: 'utushi',     word: 'ウツシマツル', title: '第2波を宇宙に示す（hibiki = 2）',      sub: 'テ「hibiki」シ → 2 を出力', ondof: 0.55, output: 2 },
+  { tick: 39, phase: 'utushi',     word: 'ウツシマツル', title: '第3波を宇宙に示す（hibiki = 3）',      sub: 'テ「hibiki」シ → 3 を出力', ondof: 0.65, output: 3 },
+  { tick: 50, phase: 'utushi',     word: 'ウツシマツル', title: '第4波を宇宙に示す（hibiki = 4）',      sub: 'テ「hibiki」シ → 4 を出力', ondof: 0.75, output: 4 },
+  { tick: 61, phase: 'utushi',     word: 'ウツシマツル', title: '第5波を宇宙に示す（hibiki = 5）',      sub: 'テ「hibiki」シ → 5 を出力', ondof: 0.85, output: 5 },
+  { tick: 72, phase: 'utushi',     word: 'ウツシマツル', title: '第6波を宇宙に示す（hibiki = 6）',      sub: 'テ「hibiki」シ → 6 を出力', ondof: 0.95, output: 6 },
+  { tick: 83, phase: 'utushi',     word: 'ウツシマツル', title: '第7波を宇宙に示す（hibiki = 7）',      sub: 'テ「hibiki」シ → 7 を出力 ／ 音度 1.000 — 宇宙に充満', ondof: 1.00, output: 7 },
+  { tick: 89, phase: 'utahi',      word: 'ウタヒ',     title: '完結 — ウタヒ、静寂',                  sub: 'テ「subeshi」エ「utahi」→ ン（HALT）', ondof: 1.00, output: null },
+];
+
+const WORD_COLORS = {
+  katakamuna: 'var(--color-katakamuna)',
+  hibiki:     'var(--color-hibiki)',
+  mano:       'var(--color-mano)',
+  ashia:      'var(--color-ashia)',
+  utushi:     'var(--color-utushi)',
+  utahi:      'var(--color-utahi)',
+};
+
+// ══════════════════════════════════════════════════
+// 星空
+// ══════════════════════════════════════════════════
+(function initStars() {
+  const canvas = document.getElementById('starCanvas');
+  const ctx = canvas.getContext('2d');
+  let stars = [];
+  let W, H;
+
+  function resize() {
+    W = canvas.width  = window.innerWidth;
+    H = canvas.height = window.innerHeight;
+  }
+  function makeStars() {
+    stars = Array.from({length: 180}, () => ({
+      x: Math.random() * W,
+      y: Math.random() * H,
+      r: Math.random() * 1.2 + 0.2,
+      a: Math.random(),
+      da: (Math.random() - 0.5) * 0.004,
+    }));
+  }
+  function draw() {
+    ctx.clearRect(0, 0, W, H);
+    const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+    if (!isDark) { requestAnimationFrame(draw); return; }
+    stars.forEach(s => {
+      s.a = Math.max(0.05, Math.min(1, s.a + s.da));
+      if (s.a <= 0.05 || s.a >= 1) s.da *= -1;
+      ctx.beginPath();
+      ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2);
+      ctx.fillStyle = `rgba(200,210,255,${s.a * 0.6})`;
+      ctx.fill();
+    });
+    requestAnimationFrame(draw);
+  }
+  window.addEventListener('resize', () => { resize(); makeStars(); });
+  resize(); makeStars(); draw();
+})();
+
+// ══════════════════════════════════════════════════
+// デコード表を生成
+// ══════════════════════════════════════════════════
+const grid = document.getElementById('decodeGrid');
+
+DECODE_DATA.forEach((d, i) => {
+  const row = document.createElement('div');
+  row.className = 'decode-row';
+  row.setAttribute('data-word', d.key);
+  row.style.transitionDelay = `${i * 80}ms`;
+  row.innerHTML = `
+    <div>
+      <div class="decode-word ${d.cls}">${d.word}</div>
+    </div>
+    <div>
+      <div class="decode-col-label">思念</div>
+      <div class="decode-shinen">${d.shinen.replace(/\n/g, '<br>')}</div>
+    </div>
+    <div>
+      <div class="decode-col-label">命令 — ${d.cmdMeaning}</div>
+      <div class="decode-cmd">${d.cmd.replace(/\n/g, '<br>')}</div>
+    </div>
+  `;
+  grid.appendChild(row);
+});
+
+// Intersection Observer でフェードイン
+const observer = new IntersectionObserver(entries => {
+  entries.forEach(e => {
+    if (e.isIntersecting) {
+      e.target.classList.add('visible');
+      observer.unobserve(e.target);
+    }
+  });
+}, { threshold: 0.1 });
+
+document.querySelectorAll('.decode-row').forEach(r => observer.observe(r));
+
+// ══════════════════════════════════════════════════
+// 波形 Canvas
+// ══════════════════════════════════════════════════
+const waveCanvas = document.getElementById('waveCanvas');
+const wCtx = waveCanvas.getContext('2d');
+let waveAmplitude = 0;
+let wavePhaseOffset = 0;
+
+function resizeWave() {
+  waveCanvas.width  = waveCanvas.offsetWidth * devicePixelRatio;
+  waveCanvas.height = waveCanvas.offsetHeight * devicePixelRatio;
+  wCtx.scale(devicePixelRatio, devicePixelRatio);
+}
+window.addEventListener('resize', resizeWave);
+resizeWave();
+
+function drawWave(t) {
+  const W = waveCanvas.offsetWidth;
+  const H = waveCanvas.offsetHeight;
+  wCtx.clearRect(0, 0, W, H);
+
+  if (waveAmplitude < 0.01) return;
+
+  const steps = 200;
+  const amp = (H * 0.38) * waveAmplitude;
+  const freq = 2 + waveAmplitude * 3;
+
+  // グロー
+  wCtx.shadowBlur = 12 * waveAmplitude;
+  wCtx.shadowColor = `rgba(201,168,76,${waveAmplitude * 0.6})`;
+
+  wCtx.beginPath();
+  for (let i = 0; i <= steps; i++) {
+    const x = (i / steps) * W;
+    const y = H/2 + Math.sin((i / steps) * Math.PI * 2 * freq + wavePhaseOffset + t * 2) * amp
+                    * Math.sin((i / steps) * Math.PI); // envelope
+    if (i === 0) wCtx.moveTo(x, y);
+    else wCtx.lineTo(x, y);
+  }
+
+  const grd = wCtx.createLinearGradient(0, 0, W, 0);
+  grd.addColorStop(0,   'rgba(255,140,122,0)');
+  grd.addColorStop(0.3, `rgba(255,140,122,${waveAmplitude})`);
+  grd.addColorStop(0.7, `rgba(201,168,76,${waveAmplitude})`);
+  grd.addColorStop(1,   'rgba(201,168,76,0)');
+
+  wCtx.strokeStyle = grd;
+  wCtx.lineWidth = 2;
+  wCtx.stroke();
+  wCtx.shadowBlur = 0;
+}
+
+let animT = 0;
+function animLoop() {
+  animT += 0.02;
+  wavePhaseOffset += 0.03;
+  drawWave(animT);
+  requestAnimationFrame(animLoop);
+}
+animLoop();
+
+// ══════════════════════════════════════════════════
+// 実行アニメーション
+// ══════════════════════════════════════════════════
+let stepIndex = 0;
+let running = false;
+let timer = null;
+
+const btnPlay  = document.getElementById('btnPlay');
+const btnReset = document.getElementById('btnReset');
+const tickNum  = document.getElementById('tickNum');
+const phraseWord  = document.getElementById('phraseWord');
+const phraseMeaningTitle = document.getElementById('phraseMeaningTitle');
+const phraseMeaningSub   = document.getElementById('phraseMeaningSub');
+const meterFill = document.getElementById('meterFill');
+const meterVal  = document.getElementById('meterVal');
+const outputValues = document.getElementById('outputValues');
+const haltMessage  = document.getElementById('haltMessage');
+
+const LABEL_MAP = {1:'ヒ',2:'フ',3:'ミ',4:'ヨ',5:'イ',6:'マ',7:'ワ'};
+
+function applyStep(s) {
+  // tick
+  tickNum.textContent = s.tick;
+
+  // フレーズ
+  phraseWord.textContent = s.word;
+  phraseWord.style.color = WORD_COLORS[s.phase] || 'var(--color-text)';
+  phraseMeaningTitle.textContent = s.title;
+  phraseMeaningSub.textContent   = s.sub;
+
+  // 音度
+  const pct = (s.ondof * 100).toFixed(1);
+  meterFill.style.width = pct + '%';
+  meterVal.textContent  = s.ondof.toFixed(3);
+  if (s.ondof >= 1.0) meterFill.classList.add('full');
+  else                meterFill.classList.remove('full');
+
+  // 波形
+  waveAmplitude = s.ondof;
+
+  // 出力バブル
+  if (s.output !== null) {
+    const bubble = document.createElement('div');
+    bubble.className = 'output-bubble';
+    bubble.innerHTML = `
+      <span class="bubble-num">${s.output}</span>
+      <span class="bubble-label">${LABEL_MAP[s.output] || ''}</span>
+    `;
+    outputValues.appendChild(bubble);
+    requestAnimationFrame(() => bubble.classList.add('shown'));
+  }
+
+  // ウタヒ
+  if (s.phase === 'utahi') {
+    haltMessage.classList.add('shown');
+    running = false;
+    btnPlay.textContent = '▶ 完了';
+    btnPlay.disabled = true;
+  }
+}
+
+function nextStep() {
+  if (stepIndex >= STEPS.length) { running = false; return; }
+  applyStep(STEPS[stepIndex]);
+  stepIndex++;
+  if (running && stepIndex < STEPS.length && STEPS[stepIndex-1].phase !== 'utahi') {
+    timer = setTimeout(nextStep, 700);
+  }
+}
+
+btnPlay.addEventListener('click', () => {
+  if (running) return;
+  running = true;
+  btnPlay.textContent = '⏸ 実行中…';
+  nextStep();
+});
+
+btnReset.addEventListener('click', () => {
+  clearTimeout(timer);
+  running = false;
+  stepIndex = 0;
+  waveAmplitude = 0;
+  tickNum.textContent = '0';
+  phraseWord.textContent = '—';
+  phraseWord.style.color = 'var(--color-text-faint)';
+  phraseMeaningTitle.textContent = '実行ボタンを押して宇宙を起動';
+  phraseMeaningSub.textContent = '';
+  meterFill.style.width = '0%';
+  meterFill.classList.remove('full');
+  meterVal.textContent = '0.000';
+  outputValues.innerHTML = '';
+  haltMessage.classList.remove('shown');
+  btnPlay.textContent = '▶ 実行';
+  btnPlay.disabled = false;
+});
+
+// ══════════════════════════════════════════════════
+// テーマトグル
+// ══════════════════════════════════════════════════
+(function() {
+  const btn = document.querySelector('[data-theme-toggle]');
+  const root = document.documentElement;
+  let theme = root.getAttribute('data-theme') || 'dark';
+  function updateBtn() {
+    btn.textContent = theme === 'dark' ? '☀ ライト' : '☾ ダーク';
+  }
+  updateBtn();
+  btn.addEventListener('click', () => {
+    theme = theme === 'dark' ? 'light' : 'dark';
+    root.setAttribute('data-theme', theme);
+    updateBtn();
+  });
+})();
+</script>
+</body>
+</html>
