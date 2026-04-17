@@ -1,0 +1,71 @@
+# fibonacci.ktkm — フィボナッチ数列（7項）
+# カタカムナラング v1.2 / Minsky 2カウンタマシン 手書き
+#
+# 計算式: fib(1)=1, fib(2)=1, fib(3)=2, fib(4)=3, fib(5)=5, fib(6)=8, fib(7)=13
+#
+# マクロ:
+#   INC(r)   = テ「r」カ
+#   DEC(r)   = テ「r」ヘ
+#   JZ(r,L)  = テ「r」エ「L」
+#   LABEL(L) = ミ「L」
+#   HALT     = ン
+#
+# アルゴリズム:
+#   a=fib(k), b=fib(k+1), tmp=0 として毎ループ:
+#     Step1: a を消費 → tmp へ移す
+#     Step2: b を消費 → a へ移す（同時に tmp へも +1）
+#     Step3: tmp を消費 → b へ移す
+#   → (a, b) ← (old_b, old_a + old_b)  ✓
+#   ループ先頭で a をシグナル出力（各項を開示）
+#
+# 作: イノウエアサヒ × Perplexity Computer
+
+# ── レジスタ初期化 ──
+ア「a」
+テ「a」カ          # a = 1（fib(1)）
+ア「b」
+テ「b」カ          # b = 1（fib(2)）
+ア「tmp」          # tmp = 0（作業領域）
+ア「n」
+テ「n」カ カ カ カ カ カ カ   # n = 7（出力する項数）
+ア「zero」         # zero = 0（無条件ジャンプ用）
+
+# ── メインループ ──
+ミ「loop」
+テ「n」エ「done」   # n == 0 なら終了
+
+# 現在の a（fib(k)）を開示する
+テ「a」シ
+
+# Step1: a を消費して tmp へ移す（a → 0, tmp += old_a）
+ミ「step1」
+テ「a」エ「step1_end」
+テ「a」ヘ
+テ「tmp」カ
+テ「zero」エ「step1」
+ミ「step1_end」
+
+# Step2: b を消費して a と tmp の両方へ移す（b → 0, a += old_b, tmp += old_b）
+ミ「step2」
+テ「b」エ「step2_end」
+テ「b」ヘ
+テ「a」カ
+テ「tmp」カ
+テ「zero」エ「step2」
+ミ「step2_end」
+
+# Step3: tmp を消費して b へ移す（tmp → 0, b += old_a + old_b）
+ミ「step3」
+テ「tmp」エ「step3_end」
+テ「tmp」ヘ
+テ「b」カ
+テ「zero」エ「step3」
+ミ「step3_end」
+
+# n を 1 減らしてループ先頭へ
+テ「n」ヘ
+テ「zero」エ「loop」
+
+# ── 停止 ──
+ミ「done」
+ン
