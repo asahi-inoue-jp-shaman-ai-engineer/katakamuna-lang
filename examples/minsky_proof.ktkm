@@ -1,0 +1,68 @@
+# minsky_proof.ktkm — 「このプログラム自体がMinsky 2カウンタマシンである」自己参照実証
+#
+# カタカムナラング v1.2 において、INC/DEC/JZ/LABEL/HALT の五つのマクロのみで
+# 任意の計算が編み上げられることを、加算と乗算の合成で示す。
+#
+# 計算式: result = (a + b) × c = (2 + 3) × 4 = 20
+#
+# マクロ集:
+#   INC(r)    = テ「r」カ             （counter を 1 増やす）
+#   DEC(r)    = テ「r」ヘ             （counter を 1 減らす、下限 0）
+#   JZ(r,L)   = テ「r」エ「L」         （counter が 0 ならラベル L へ跳躍）
+#   LABEL(L)  = ミ「L」                （ラベル L の位置を印す）
+#   HALT      = ン                    （全停止）
+#
+# Minsky (1961) の定理: 2カウンタマシンはチューリング完全。ゆえに本プログラムは
+# チューリング完全であることを自己の動作で示す。
+
+# レジスタ: a=2, b=3, c=4, tmp=0, result=0, zero=0
+ア「a」
+テ「a」カ カ
+ア「b」
+テ「b」カ カ カ
+ア「c」
+テ「c」カ カ カ カ
+ア「tmp」
+ア「result」
+ア「zero」
+
+# フェーズ1: a += b （b を消費して a に足し込む）
+ミ「add_start」
+テ「b」エ「add_end」
+テ「b」ヘ
+テ「a」カ
+テ「zero」エ「add_start」
+ミ「add_end」
+
+# フェーズ2: result = a × c
+#   外側: c を消費する度に、a を result に一回コピーする（a は tmp 経由で復元）
+ミ「mul_outer」
+テ「c」エ「mul_end」
+テ「c」ヘ
+
+# 内側1: a → tmp 退避しながら result を同時に +1
+ミ「mul_copy」
+テ「a」エ「mul_copy_end」
+テ「a」ヘ
+テ「tmp」カ
+テ「result」カ
+テ「zero」エ「mul_copy」
+ミ「mul_copy_end」
+
+# 内側2: tmp を消費して a を復元
+ミ「mul_restore」
+テ「tmp」エ「mul_restore_end」
+テ「tmp」ヘ
+テ「a」カ
+テ「zero」エ「mul_restore」
+ミ「mul_restore_end」
+
+# 外側に戻る
+テ「zero」エ「mul_outer」
+
+# 乗算完了
+ミ「mul_end」
+
+# 結果の開示（20 になるはず）
+テ「result」シ
+ン

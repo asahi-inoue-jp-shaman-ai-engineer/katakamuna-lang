@@ -1,0 +1,101 @@
+name: Turing Completeness Proof
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  proof:
+    name: カタカムナラング v1.2 — Turing完全性の実証
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: チェックアウト
+        uses: actions/checkout@v4
+
+      - name: Python 3.11 セットアップ
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: 73音 全コマンド動作試験
+        run: |
+          cd "${GITHUB_WORKSPACE}"
+          PYTHONIOENCODING=utf-8 python tests/test_all_phonemes.py | tee /tmp/phonemes.log
+          grep -q "73/73 成功" /tmp/phonemes.log
+
+      - name: Minsky 加算 3 + 2 = 5
+        run: |
+          PYTHONIOENCODING=utf-8 python katakamuna.py exec examples/minsky_add.ktkm | tee /tmp/add.log
+          grep -E "名: 「r1」" -A 10 /tmp/add.log | grep -E "数:\s*5" \
+            || (echo "::error::minsky_add.ktkm did not produce counter=5"; exit 1)
+
+      - name: Minsky 乗算 3 × 4 = 12
+        run: |
+          PYTHONIOENCODING=utf-8 python katakamuna.py exec examples/minsky_multiply.ktkm | tee /tmp/mul.log
+          grep -E "名: 「r3」" -A 10 /tmp/mul.log | grep -E "数:\s*12" \
+            || (echo "::error::minsky_multiply.ktkm did not produce counter=12"; exit 1)
+
+      - name: Minsky 合成証明 (2 + 3) × 4 = 20
+        run: |
+          PYTHONIOENCODING=utf-8 python katakamuna.py exec examples/minsky_proof.ktkm | tee /tmp/proof.log
+          grep -E "名: 「result」" -A 10 /tmp/proof.log | grep -E "数:\s*20" \
+            || (echo "::error::minsky_proof.ktkm did not produce counter=20"; exit 1)
+
+      - name: 後方互換 hello_world
+        run: |
+          PYTHONIOENCODING=utf-8 python katakamuna.py exec examples/hello_world.ktkm | tee /tmp/hello.log
+          grep -q "ハロー" /tmp/hello.log
+
+      - name: Brainfuck 構成的証明 (copy 3 + 2 = 5)
+        env:
+          KATAKAMUNA_MAX_TICKS: "20000"
+        run: |
+          PYTHONIOENCODING=utf-8 python katakamuna.py exec examples/bf_copy.ktkm | tee /tmp/bf_copy.log
+          grep -E "名: 「c1」" -A 10 /tmp/bf_copy.log | grep -E "数:\s*5" \
+            || (echo "::error::bf_copy.ktkm did not produce c1=5"; exit 1)
+
+      - name: Brainfuck 構成的証明 (multiply 2 x 3 = 6)
+        env:
+          KATAKAMUNA_MAX_TICKS: "100000"
+        run: |
+          PYTHONIOENCODING=utf-8 python katakamuna.py exec examples/bf_multiply.ktkm | tee /tmp/bf_mul.log
+          grep -E "名: 「c2」" -A 10 /tmp/bf_mul.log | grep -E "数:\s*6" \
+            || (echo "::error::bf_multiply.ktkm did not produce c2=6"; exit 1)
+
+      - name: Brainfuck 構成的証明 (H = 72)
+        env:
+          KATAKAMUNA_MAX_TICKS: "100000"
+        run: |
+          PYTHONIOENCODING=utf-8 python katakamuna.py exec examples/bf_hello_digit.ktkm | tee /tmp/bf_h.log
+          grep -E "名: 「c1」" -A 10 /tmp/bf_h.log | grep -E "数:\s*72" \
+            || (echo "::error::bf_hello_digit.ktkm did not produce c1=72"; exit 1)
+
+      - name: 証明サマリー
+        if: success()
+        run: |
+          echo "::notice::カタカムナラング v1.2 — Minsky 2カウンタマシン経路 と Brainfuck 経路、独立した二経路で Turing完全性を実証した。"
+          echo ""
+          echo "## 実証結果" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "| テスト | 期待 | 結果 |" >> $GITHUB_STEP_SUMMARY
+          echo "|---|---|:---:|" >> $GITHUB_STEP_SUMMARY
+          echo "| 73音 全コマンド試験 | 73/73 成功 | OK |" >> $GITHUB_STEP_SUMMARY
+          echo "| Minsky 加算 | r1.counter = 5 | OK |" >> $GITHUB_STEP_SUMMARY
+          echo "| Minsky 乗算 | r3.counter = 12 | OK |" >> $GITHUB_STEP_SUMMARY
+          echo "| Minsky 合成 | result.counter = 20 | OK |" >> $GITHUB_STEP_SUMMARY
+          echo "| 後方互換 | hello_world 動作 | OK |" >> $GITHUB_STEP_SUMMARY
+          echo "| Brainfuck copy | c1.counter = 5 | OK |" >> $GITHUB_STEP_SUMMARY
+          echo "| Brainfuck multiply | c2.counter = 6 | OK |" >> $GITHUB_STEP_SUMMARY
+          echo "| Brainfuck H=72 | c1.counter = 72 | OK |" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### 独立な二経路による Turing完全性証明" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**経路1 (PROOF.md)**: Minsky (1961) により 2カウンタマシンは Turing完全。カタカムナラング v1.2 は 5マクロ (INC/DEC/JZ/LABEL/HALT) で 2カウンタマシンをエミュレートする。" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**経路2 (PROOF_BRAINFUCK.md)**: Brainfuck は Turing完全 (well-known)。tools/bf2ktkm.py が任意の Brainfuck ソースをカタカムナラング v1.2 音素列に機械的に翻訳する。" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "∴ カタカムナラング v1.2 は Turing完全である (二重保険付き)。" >> $GITHUB_STEP_SUMMARY

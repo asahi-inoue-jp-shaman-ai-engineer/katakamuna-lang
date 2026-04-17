@@ -1,0 +1,45 @@
+# minsky_multiply.ktkm — 整数乗算 r3 = r1 × r2
+# カタカムナラング v1.2 / Minsky 2カウンタマシン・マクロの組合せを示す実証。
+# 補助レジスタ rt を用いて r1 を退避・復元しながら、外側ループで r2 を消費する。
+# マクロ: INC(r)=テ「r」カ 、DEC(r)=テ「r」ヘ 、JZ(r,L)=テ「r」エ「L」 、LABEL(L)=ミ「L」 、HALT=ン
+
+# レジスタ用意: r1=3, r2=4, r3=0, rt=0, zero=0
+ア「r1」
+テ「r1」カ カ カ
+ア「r2」
+テ「r2」カ カ カ カ
+ア「r3」
+ア「rt」
+ア「zero」
+
+# 外側ループ開始
+ミ「outer」
+テ「r2」エ「done」
+テ「r2」ヘ
+
+# 内側1: r1 を rt に退避しながら r3 を同時に +1
+ミ「copy_loop」
+テ「r1」エ「copy_end」
+テ「r1」ヘ
+テ「rt」カ
+テ「r3」カ
+テ「zero」エ「copy_loop」
+
+# 内側1 終端
+ミ「copy_end」
+
+# 内側2: rt を消費して r1 を復元
+ミ「restore_loop」
+テ「rt」エ「restore_end」
+テ「rt」ヘ
+テ「r1」カ
+テ「zero」エ「restore_loop」
+
+# 内側2 終端 — 外側ループへ戻る
+ミ「restore_end」
+テ「zero」エ「outer」
+
+# 乗算完了
+ミ「done」
+テ「r3」シ
+ン
