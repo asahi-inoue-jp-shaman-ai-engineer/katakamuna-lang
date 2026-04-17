@@ -22,11 +22,11 @@
 # 音素プログラムの直接実行
 PYTHONIOENCODING=utf-8 python katakamuna.py run "アカヒナミ"
 
-# ファイル実行
-PYTHONIOENCODING=utf-8 python katakamuna.py exec examples/minsky_add.ktkm
+# ファイル実行（Minsky/BFプログラムは KATAKAMUNA_MAX_TICKS=0 推奨）
+PYTHONIOENCODING=utf-8 KATAKAMUNA_MAX_TICKS=0 python katakamuna.py exec examples/minsky_add.ktkm
 
-# REPL
-PYTHONIOENCODING=utf-8 python katakamuna.py repl
+# REPL（暴走防止のため tick 上限を設定するとよい）
+KATAKAMUNA_MAX_TICKS=10000 PYTHONIOENCODING=utf-8 python katakamuna.py repl
 ```
 
 Python 3.11+ が必要。追加の依存はない。
