@@ -134,3 +134,8 @@ katakamuna-lang/
 | 変数 | 説明 |
 |---|---|
 | `KATAKAMUNA_MAX_TICKS` | 実行tick上限（0=無制限、デフォルト0）。Turing完全モードでは0が必須。 |
+
+## リンク
+
+- [PyPI パッケージ](https://pypi.org/project/katakamuna-lang/)
+- [Esolang Wiki 記事](https://esolangs.org/wiki/Katakamuna_Lang)
